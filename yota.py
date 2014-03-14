@@ -22,13 +22,11 @@ import http.cookiejar
 import re
 import json
 import sys
-import pprint
 
 _tariffs = list("{}".format(x) for x in range(250, 901, 50))
 
 
 def change_offer(args):
-    print("setting speed to {}".format(args.speed))
     (device, cj) = _login(args.login, args.password)
     _change(args.speed, device, cj)
 
@@ -61,7 +59,6 @@ def _parse_slider(page):
 
 def _change(speed, device, cj):
     print("changing offer")
-    pprint.pprint(device)
     offer = next(x for x in device["steps"] if x["amountNumber"] == speed)
     remain = offer["remainNumber"] + " " + offer["remainString"]
     productId = device["productId"]
@@ -72,13 +69,13 @@ def _change(speed, device, cj):
           "offerCode" : offer["code"],
           "areOffersAvailable" : "false",
           "period" : remain,
-          "status" : "custom",
+          "status" : device["status"],
           "autoprolong" : "1",
           "isSlot" : "false",
           "resourceId" : "",
           "currentDevice" : "0",
           "username" : "",
-          "isDisablingAutoprolong" : "false"
+          "isDisablingAutoprolong" : offer["isDisablingAutoprolong"]
           }
 
 
@@ -86,6 +83,8 @@ def _change(speed, device, cj):
     data = data.encode('utf-8')
     opener = request.build_opener(urllib.request.HTTPCookieProcessor(cj))
     response = opener.open(url, data)
+    currentProduct = device["currentProduct"]
+    print("Changing plan from {} {} to {} {}".format(offer["amountNumber"], offer["amountString"], offer["amountNumber"], offer["amountString"]))
     print("Time remaining: {}".format(remain))
 
 
