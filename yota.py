@@ -53,12 +53,13 @@ def _parse_slider(page):
             print(unavailable)
             sys.exit(0)
 
-    print("error parsing page")
+    print("slider data not found in page")
     sys.exit(0)
 
 
 def _change(speed, device, cj):
     print("changing offer")
+    #pprint.pprint(device)
     offer = next(x for x in device["steps"] if x["amountNumber"] == speed)
     remain = offer["remainNumber"] + " " + offer["remainString"]
     productId = device["productId"]
@@ -93,7 +94,6 @@ def _login(login, password):
     url = "https://login.yota.ru/UI/Login"
     values = {"IDToken1" : login,
           "IDToken2" : password,
-          "IDToken3" : password,
           "goto" : "https://my.yota.ru:443/selfcare/loginSuccess",
           "gotoOnFail" : "https://my.yota.ru:443/selfcare/loginError",
           "org" : "customer" }
@@ -106,6 +106,7 @@ def _login(login, password):
 
     response = opener.open(url, data)
 
+    #page = opener.open("https://my.yota.ru/devices").read().decode("utf-8")
     page = response.read().decode("utf-8")
     device = _parse_device(page)
     return (device, cj)
