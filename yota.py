@@ -22,13 +22,45 @@ import http.cookiejar
 import re
 import json
 import sys
+import os
 
 _tariffs = list("{}".format(x) for x in range(250, 901, 50))
 
+def _get_home_dir():
+    if os.name != "posix":
+        from win32com.shell import shellcon, shell
+        return shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+    else:
+        return os.path.expanduser("~")
+
+_config_file = os.path.join(_get_home_dir(), ".yotarc")
+
+
 
 def change_offer(args):
-    (device, cj) = _login(args.login, args.password)
+    (login, password) = _get_credentials(args)
+    (device, cj) = _login(login, password)
     _change(args.speed, device, cj)
+
+def _get_credentials(args):
+    login = None
+    password = None
+    try:
+        with open(_config_file, "r") as conf_file:
+            conf = json.load(conf_file)
+            login = conf["login"]
+            password = conf["password"]
+    except IOError:
+        login = args.login
+        password = args.password
+        pass
+
+    if login == None and password == None:
+        print('Please specify username and password or create a file ' + _config_file + ' with credentials like {"login": "your_login", "password": "your_password"}')
+        sys.exit(0)
+
+    return login, password
+
 
 
 def _parse_device(page):
@@ -57,10 +89,12 @@ def _parse_slider(page):
     sys.exit(0)
 
 
+import pprint
 def _change(speed, device, cj):
     print("changing offer")
     #pprint.pprint(device)
     offer = next(x for x in device["steps"] if x["amountNumber"] == speed)
+    #pprint.pprint(offer)
     remain = offer["remainNumber"] + " " + offer["remainString"]
     productId = device["productId"]
 
@@ -75,8 +109,7 @@ def _change(speed, device, cj):
           "isSlot" : "false",
           "resourceId" : "",
           "currentDevice" : "0",
-          "username" : "",
-          "isDisablingAutoprolong" : offer["isDisablingAutoprolong"]
+          "username" : ""
           }
 
 
