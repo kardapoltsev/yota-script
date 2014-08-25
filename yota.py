@@ -118,7 +118,7 @@ def _change(speed, device, cj):
     opener = request.build_opener(urllib.request.HTTPCookieProcessor(cj))
     response = opener.open(url, data)
     currentProduct = device["currentProduct"]
-    print("Changing plan from {} {} to {} {}".format(offer["amountNumber"], offer["amountString"], offer["amountNumber"], offer["amountString"]))
+    print("Changing plan from {} {} to {} {}".format(currentProduct["amountNumber"], currentProduct["amountString"], offer["amountNumber"], offer["amountString"]))
     print("Time remaining: {}".format(remain))
 
 
